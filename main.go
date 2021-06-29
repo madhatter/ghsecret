@@ -55,9 +55,6 @@ func main() {
 	// public key fetched from github-repo
 	config.pubkey.FetchPublicKey(config)
 
-	//pkey := "+YM3PNgG3jET4XyWRuxpc8p2frjgI0D/OULKqNZ2cBM="
-	//key, _ := b64.StdEncoding.DecodeString(pkey)
-
 	key, _ := b64.StdEncoding.DecodeString(config.pubkey.Key)
 
 	cyphercyper, _ := Encrypt(plaintext, []byte(key))

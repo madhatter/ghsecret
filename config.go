@@ -94,6 +94,7 @@ func (config *Config) parseCLIArgs() {
 }
 
 func (config *Config) validate() error {
+	// TODO If aws_profile given then it might be okay to fetch github_user and apikey from parameter store instead of cli
 	if err := checkStringFlagNotEmpty("github_user", config.github_user); err != nil {
 		return err
 	}

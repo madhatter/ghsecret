@@ -11,7 +11,7 @@ func writeSecret(name string, value string) error {
 	if err != nil {
 		// handle err
 	}
-	req.SetBasicAuth("arvidwarnecke0042", "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")
+	req.SetBasicAuth("", "")
 	req.Header.Set("Accept", "application/vnd.github.v3+json")
 
 	resp, err := http.DefaultClient.Do(req)
