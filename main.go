@@ -53,7 +53,7 @@ func main() {
 	plaintext := []byte(config.text)
 
 	// public key fetched from github-repo
-	config.pubkey.FetchPublicKey(config)
+	config.FetchPublicKey()
 
 	key, _ := b64.StdEncoding.DecodeString(config.pubkey.Key)
 

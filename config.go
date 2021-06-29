@@ -51,7 +51,7 @@ func NewPubKey() *PubKey {
 }
 
 // fetchPublicKey gets the public key and key_id for a given Github repository
-func (pubkey *PubKey) FetchPublicKey(config *Config) {
+func (config *Config) FetchPublicKey() {
 	urlString := "https://api.github.com/repos/otto-ec/" + config.github_repo + "/actions/secrets/public-key"
 	req, err := http.NewRequest("GET", urlString, nil)
 	if err != nil {
@@ -75,7 +75,7 @@ func (pubkey *PubKey) FetchPublicKey(config *Config) {
 			log.Fatal(err)
 		}
 		bodyString := string(bodyBytes)
-		json.Unmarshal([]byte(bodyString), pubkey)
+		json.Unmarshal([]byte(bodyString), config.pubkey)
 	} else {
 		fmt.Println("Repository not found or accessible. Status code " + strconv.Itoa(resp.StatusCode))
 		os.Exit(127)
