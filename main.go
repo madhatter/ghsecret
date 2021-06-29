@@ -45,16 +45,20 @@ func main() {
 		os.Exit(1)
 	}
 
+	createAWSClient(&config.aws_profile, false)
+	secretString := getSecret(&config.aws_parameter)
+	fmt.Println(secretString)
+
 	// convert string from command line
 	plaintext := []byte(config.text)
 
 	// public key fetched from github-repo
-	config.pubkey.FetchPublicKey(config.github_repo)
+	config.pubkey.FetchPublicKey(config)
 
 	//pkey := "+YM3PNgG3jET4XyWRuxpc8p2frjgI0D/OULKqNZ2cBM="
 	//key, _ := b64.StdEncoding.DecodeString(pkey)
 
-	key, _ := b64.StdEncoding.DecodeString(config.pubkey.key)
+	key, _ := b64.StdEncoding.DecodeString(config.pubkey.Key)
 
 	cyphercyper, _ := Encrypt(plaintext, []byte(key))
 	fmt.Println(b64.StdEncoding.EncodeToString(cyphercyper))
