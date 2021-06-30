@@ -93,7 +93,6 @@ func (config *Config) FetchPublicKey() {
 func (config *Config) fetchGithubAPIKey() {
 	path := API_KEY_PATH
 	config.github_apikey = getSecret(&path)
-	fmt.Println("Api: " + config.github_apikey)
 }
 
 // storeAWSCredentials stores the AWS credentials to the config
@@ -106,8 +105,8 @@ func (config *Config) storeAWSCredentials(keyId string, keySecret string) {
 func (config *Config) parseCLIArgs() {
 	// read parameters from the command line
 	flag.StringVar(&config.aws_profile, "aws_profile", "", "AWS profile. (Required)")
-	flag.StringVar(&config.github_user, "github_user", "", "Github user name. (Required)")
-	flag.StringVar(&config.github_apikey, "github_apikey", "", "Github API key. (Required)")
+	flag.StringVar(&config.github_user, "github_user", "", "Github user name. Default: "+API_USER+" (Optional)")
+	flag.StringVar(&config.github_apikey, "github_apikey", "", "Github API key. (Optional)")
 	flag.StringVar(&config.github_repo, "github_repo", "", "Github repository where the secrets will be added. (Required)")
 	flag.BoolVar(&config.decrypt, "decrypt", false, "Decrypt given cypher text. Default is to encrypt from parameter store data.")
 	flag.StringVar(&config.text, "text", "", "Text to either encrypt or decrypt. (Optional)")
@@ -116,15 +115,6 @@ func (config *Config) parseCLIArgs() {
 
 // validate checks if all necessary arguments were given on the command line
 func (config *Config) validate() error {
-	// TODO If aws_profile given then it might be okay to fetch github_user and apikey from parameter store instead of cli
-	if err := checkStringFlagNotEmpty("github_user", config.github_user); err != nil {
-		return err
-	}
-
-	if err := checkStringFlagNotEmpty("github_apikey", config.github_apikey); err != nil {
-		return err
-	}
-
 	if err := checkStringFlagNotEmpty("github_repo", config.github_repo); err != nil {
 		return err
 	}

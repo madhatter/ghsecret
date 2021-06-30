@@ -22,11 +22,15 @@ func main() {
 	}
 
 	createAWSClient(&config.aws_profile, false)
+
 	secretString := getSecret(&config.aws_parameter)
-
 	json.Unmarshal([]byte(secretString), &m)
-
 	config.storeAWSCredentials(m["AWS_ACCESS_KEY_ID"], m["AWS_ACCESS_KEY_SECRET"])
+
+	// get the default API key from parameter store if it wasn't given on cli
+	if config.github_apikey == "" {
+		config.fetchGithubAPIKey()
+	}
 
 	// convert string from command line
 	plaintext := []byte(config.text)
