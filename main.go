@@ -3,6 +3,7 @@ package main
 import (
 	"crypto/rand"
 	b64 "encoding/base64"
+	"encoding/json"
 	"flag"
 	"fmt"
 	"os"
@@ -36,6 +37,9 @@ func Decrypt(cyphertext, k []byte) ([]byte, error) {
 }
 
 func main() {
+	var m map[string]string
+	m = make(map[string]string)
+
 	config := NewConfig()
 	config.parseCLIArgs()
 
@@ -47,7 +51,10 @@ func main() {
 
 	createAWSClient(&config.aws_profile, false)
 	secretString := getSecret(&config.aws_parameter)
-	fmt.Println(secretString)
+
+	json.Unmarshal([]byte(secretString), &m)
+
+	config.storeAWSCredentials(m["AWS_ACCESS_KEY_ID"], m["AWS_ACCESS_KEY_SECRET"])
 
 	// convert string from command line
 	plaintext := []byte(config.text)

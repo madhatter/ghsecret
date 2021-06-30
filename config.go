@@ -11,29 +11,36 @@ import (
 	"strconv"
 )
 
+const API_USER string = "FKT-dv-jenkins"
+const API_KEY_PATH string = "/dv/common/github.apikey"
+
 type Config struct {
-	aws_profile   string
-	aws_parameter string
-	github_user   string
-	github_apikey string
-	github_repo   string
-	text          string
-	pubkey        *PubKey
-	decrypt       bool
+	aws_profile    string
+	aws_parameter  string
+	aws_key_id     string
+	aws_key_secret string
+	github_user    string
+	github_apikey  string
+	github_repo    string
+	text           string
+	pubkey         *PubKey
+	decrypt        bool
 }
 
 func NewConfig() *Config {
 	pkey := NewPubKey()
 
 	return &Config{
-		aws_profile:   "",
-		aws_parameter: "/dv/github-aws-credential-json",
-		github_user:   "",
-		github_apikey: "",
-		github_repo:   "",
-		text:          "",
-		pubkey:        pkey,
-		decrypt:       false,
+		aws_profile:    "",
+		aws_parameter:  "/dv/github-aws-credential-json",
+		aws_key_id:     "",
+		aws_key_secret: "",
+		github_user:    API_USER,
+		github_apikey:  "",
+		github_repo:    "",
+		text:           "",
+		pubkey:         pkey,
+		decrypt:        false,
 	}
 }
 
@@ -82,6 +89,20 @@ func (config *Config) FetchPublicKey() {
 	}
 }
 
+// fetchGithubAPIKey gets the credentials needed to access Github from the parameter store in AWS
+func (config *Config) fetchGithubAPIKey() {
+	path := API_KEY_PATH
+	config.github_apikey = getSecret(&path)
+	fmt.Println("Api: " + config.github_apikey)
+}
+
+// storeAWSCredentials stores the AWS credentials to the config
+func (config *Config) storeAWSCredentials(keyId string, keySecret string) {
+	config.aws_key_id = keyId
+	config.aws_key_secret = keySecret
+}
+
+// parseCLIArgs parses all command line arguments
 func (config *Config) parseCLIArgs() {
 	// read parameters from the command line
 	flag.StringVar(&config.aws_profile, "aws_profile", "", "AWS profile. (Required)")
@@ -93,6 +114,7 @@ func (config *Config) parseCLIArgs() {
 	flag.Parse()
 }
 
+// validate checks if all necessary arguments were given on the command line
 func (config *Config) validate() error {
 	// TODO If aws_profile given then it might be okay to fetch github_user and apikey from parameter store instead of cli
 	if err := checkStringFlagNotEmpty("github_user", config.github_user); err != nil {
