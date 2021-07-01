@@ -26,14 +26,18 @@ func handleParameterstoreValues(key []byte) {
 	var m map[string]string
 	m = make(map[string]string)
 
-	fmt.Println("tbd.")
 	secretString := getSecret(&config.aws_parameter)
 	json.Unmarshal([]byte(secretString), &m)
 	config.storeAWSCredentials(m["AWS_ACCESS_KEY_ID"], m["AWS_ACCESS_KEY_SECRET"])
 
-	plainbytes := []byte(config.aws_key_id)
-	cyphercyper, _ := Encrypt(plainbytes, []byte(key))
-	fmt.Println(b64.StdEncoding.EncodeToString(cyphercyper))
+	for k, v := range m {
+		plainbytes := []byte(v)
+		cyphercyper, _ := Encrypt(plainbytes, []byte(key))
+		fmt.Println(k + ": " + b64.StdEncoding.EncodeToString(cyphercyper))
+		if err := writeSecret(k, b64.StdEncoding.EncodeToString(cyphercyper)); err != nil {
+			panic(err)
+		}
+	}
 }
 
 func main() {
