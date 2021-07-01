@@ -109,7 +109,7 @@ func (config *Config) parseCLIArgs() {
 	flag.StringVar(&config.github_apikey, "github_apikey", "", "Github API key. (Optional)")
 	flag.StringVar(&config.github_repo, "github_repo", "", "Github repository where the secrets will be added. (Required)")
 	flag.BoolVar(&config.decrypt, "decrypt", false, "Decrypt given cypher text. Default is to encrypt from parameter store data.")
-	flag.StringVar(&config.text, "text", "", "Text to either encrypt or decrypt. (Optional)")
+	flag.StringVar(&config.text, "text", "", "Text to either encrypt or decrypt. Local mode! Will not be stored to Github secrets yet. (Optional)")
 	flag.Parse()
 }
 

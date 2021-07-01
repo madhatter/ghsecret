@@ -8,11 +8,36 @@ import (
 	"os"
 )
 
-func main() {
+var config *Config
+
+func handleText(key []byte) {
+	if config.decrypt == true {
+		b, _ := b64.StdEncoding.DecodeString(config.text)
+		decrypted, _ := Decrypt(b, []byte(key))
+		fmt.Println(string(decrypted))
+	} else {
+		plainbytes := []byte(config.text)
+		cyphercyper, _ := Encrypt(plainbytes, []byte(key))
+		fmt.Println(b64.StdEncoding.EncodeToString(cyphercyper))
+	}
+}
+
+func handleParameterstoreValues(key []byte) {
 	var m map[string]string
 	m = make(map[string]string)
 
-	config := NewConfig()
+	fmt.Println("tbd.")
+	secretString := getSecret(&config.aws_parameter)
+	json.Unmarshal([]byte(secretString), &m)
+	config.storeAWSCredentials(m["AWS_ACCESS_KEY_ID"], m["AWS_ACCESS_KEY_SECRET"])
+
+	plainbytes := []byte(config.aws_key_id)
+	cyphercyper, _ := Encrypt(plainbytes, []byte(key))
+	fmt.Println(b64.StdEncoding.EncodeToString(cyphercyper))
+}
+
+func main() {
+	config = NewConfig()
 	config.parseCLIArgs()
 
 	if err := config.validate(); err != nil {
@@ -23,26 +48,19 @@ func main() {
 
 	createAWSClient(&config.aws_profile, false)
 
-	secretString := getSecret(&config.aws_parameter)
-	json.Unmarshal([]byte(secretString), &m)
-	config.storeAWSCredentials(m["AWS_ACCESS_KEY_ID"], m["AWS_ACCESS_KEY_SECRET"])
-
 	// get the default API key from parameter store if it wasn't given on cli
 	if config.github_apikey == "" {
 		config.fetchGithubAPIKey()
 	}
 
-	// convert string from command line
-	plaintext := []byte(config.text)
-
 	// public key fetched from github-repo
 	config.FetchPublicKey()
-
 	key, _ := b64.StdEncoding.DecodeString(config.pubkey.Key)
 
-	cyphercyper, _ := Encrypt(plaintext, []byte(key))
-	fmt.Println(b64.StdEncoding.EncodeToString(cyphercyper))
-
-	decrypted, _ := Decrypt(cyphercyper, []byte(key))
-	fmt.Println(string(decrypted))
+	// convert string from command line
+	if config.text != "" {
+		handleText(key)
+	} else {
+		handleParameterstoreValues(key)
+	}
 }
