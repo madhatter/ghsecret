@@ -9,10 +9,10 @@ import (
 
 // writeSecret writes the value to a secret name in the configured repository
 func writeSecret(name string, value string) error {
+	var urlStr = "https://api.github.com/repos/otto-ec/" + config.github_repo + "/actions/secrets/" + name
 	var jsonStr = []byte(`{"key_id":"` + config.pubkey.Key_id + `","encrypted_value":"` + value + `"}`)
 
-	// TODO This has to be changed: github_repo and secret_name
-	req, err := http.NewRequest("PUT", "https://api.github.com/repos/otto-ec/dv_opal-permission/actions/secrets/AWS_TEST_SECRET2", bytes.NewBuffer(jsonStr))
+	req, err := http.NewRequest("PUT", urlStr, bytes.NewBuffer(jsonStr))
 	if err != nil {
 		fmt.Println(err)
 		os.Exit(127)
