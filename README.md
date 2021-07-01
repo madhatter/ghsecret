@@ -12,8 +12,7 @@ work for for edge cases.
 
 ## Example
 ```
-dv_opal-githubsecrets --github_repo dv_opal-inventory --aws-profile
-dv-live-developer
+dv_opal-githubsecrets --github_repo dv_opal-inventory --aws-profile dv-live-developer
 ```
 If a custom text is given it will either encrypted or decrypted and printed to
 stdout instead of sending it to Github.
