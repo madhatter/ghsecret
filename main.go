@@ -26,6 +26,7 @@ func handleParameterstoreValues(key []byte) {
 	var m map[string]string
 	m = make(map[string]string)
 
+	fmt.Println("Getting credentials from Parameter Store.")
 	secretString := getSecret(&config.aws_parameter)
 	json.Unmarshal([]byte(secretString), &m)
 	config.storeAWSCredentials(m["AWS_ACCESS_KEY_ID"], m["AWS_ACCESS_KEY_SECRET"])
@@ -33,7 +34,7 @@ func handleParameterstoreValues(key []byte) {
 	for k, v := range m {
 		plainbytes := []byte(v)
 		cyphercyper, _ := Encrypt(plainbytes, []byte(key))
-		fmt.Println(k + ": " + b64.StdEncoding.EncodeToString(cyphercyper))
+		fmt.Println("Updating Github secret " + k)
 		if err := writeSecret(k, b64.StdEncoding.EncodeToString(cyphercyper)); err != nil {
 			panic(err)
 		}
