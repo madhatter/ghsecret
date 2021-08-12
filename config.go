@@ -1,18 +1,25 @@
 package main
 
 import (
+	"encoding/base64"
 	"encoding/json"
 	"flag"
 	"fmt"
+	"io"
 	"io/ioutil"
-	"log"
 	"net/http"
 	"os"
 	"strconv"
+
+	log "github.com/sirupsen/logrus"
 )
 
 const API_USER string = "FKT-dv-jenkins"
 const API_KEY_PATH string = "/dv/common/github.apikey"
+
+func init() {
+	log.SetOutput(os.Stdout)
+}
 
 type Config struct {
 	aws_profile    string
@@ -24,7 +31,7 @@ type Config struct {
 	github_repo    string
 	text           string
 	pubkey         *PubKey
-	decrypt        bool
+	RandomOverride io.Reader
 }
 
 func NewConfig() *Config {
@@ -40,12 +47,12 @@ func NewConfig() *Config {
 		github_repo:    "",
 		text:           "",
 		pubkey:         pkey,
-		decrypt:        false,
 	}
 }
 
 // TODO Maybe put the pubkey stuff in it's own file?
 type PubKey struct {
+	Raw    [32]byte
 	Key    string
 	Key_id string
 }
@@ -83,10 +90,18 @@ func (config *Config) FetchPublicKey() {
 		}
 		bodyString := string(bodyBytes)
 		json.Unmarshal([]byte(bodyString), config.pubkey)
+		log.Debugln("Public key: " + config.pubkey.Key)
 	} else {
 		fmt.Println("Repository not found or accessible. Status code " + strconv.Itoa(resp.StatusCode))
 		os.Exit(127)
 	}
+
+	decoded, err := base64.StdEncoding.DecodeString(config.pubkey.Key)
+	if err != nil {
+		fmt.Errorf("failed to decode public key: %w", err)
+	}
+
+	copy(config.pubkey.Raw[:], decoded[0:32])
 }
 
 // fetchGithubAPIKey gets the credentials needed to access Github from the parameter store in AWS
@@ -108,8 +123,7 @@ func (config *Config) parseCLIArgs() {
 	flag.StringVar(&config.github_user, "github_user", "", "Github user name. Default: "+API_USER+" (Optional)")
 	flag.StringVar(&config.github_apikey, "github_apikey", "", "Github API key. (Optional)")
 	flag.StringVar(&config.github_repo, "github_repo", "", "Github repository where the secrets will be added. (Required)")
-	flag.BoolVar(&config.decrypt, "decrypt", false, "Decrypt given cypher text. Default is to encrypt from parameter store data.")
-	flag.StringVar(&config.text, "text", "", "Text to either encrypt or decrypt. Local mode! Will not be stored to Github secrets yet. (Optional)")
+	flag.StringVar(&config.text, "text", "", "Text to encrypt. Local mode! Will not be stored to Github secrets yet. (Optional)")
 	flag.Parse()
 }
 

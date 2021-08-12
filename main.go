@@ -6,23 +6,23 @@ import (
 	"flag"
 	"fmt"
 	"os"
+
+	"golang.org/x/crypto/nacl/box"
 )
 
 var config *Config
 
-func handleText(key []byte) {
-	if config.decrypt == true {
-		b, _ := b64.StdEncoding.DecodeString(config.text)
-		decrypted, _ := Decrypt(b, []byte(key))
-		fmt.Println(string(decrypted))
-	} else {
-		plainbytes := []byte(config.text)
-		cyphercyper, _ := Encrypt(plainbytes, []byte(key))
-		fmt.Println(b64.StdEncoding.EncodeToString(cyphercyper))
+func handleText(rkey *[32]byte) {
+	plainbytes := []byte(config.text)
+	cyphercyper, err := box.SealAnonymous(nil, plainbytes, rkey, config.RandomOverride)
+	if err != nil {
+		fmt.Errorf("failed to encrypt secret: %w", err)
 	}
+
+	fmt.Println(b64.StdEncoding.EncodeToString(cyphercyper))
 }
 
-func handleParameterstoreValues(key []byte) {
+func handleParameterstoreValues(rkey *[32]byte) {
 	var m map[string]string
 	m = make(map[string]string)
 
@@ -33,7 +33,11 @@ func handleParameterstoreValues(key []byte) {
 
 	for k, v := range m {
 		plainbytes := []byte(v)
-		cyphercyper, _ := Encrypt(plainbytes, []byte(key))
+		cyphercyper, err := box.SealAnonymous(nil, plainbytes, rkey, config.RandomOverride)
+		if err != nil {
+			fmt.Errorf("failed to encrypt secret: %w", err)
+		}
+
 		fmt.Println("Updating Github secret " + k)
 		if err := writeSecret(k, b64.StdEncoding.EncodeToString(cyphercyper)); err != nil {
 			panic(err)
@@ -60,12 +64,11 @@ func main() {
 
 	// public key fetched from github-repo
 	config.FetchPublicKey()
-	key, _ := b64.StdEncoding.DecodeString(config.pubkey.Key)
 
 	// convert string from command line
 	if config.text != "" {
-		handleText(key)
+		handleText(&config.pubkey.Raw)
 	} else {
-		handleParameterstoreValues(key)
+		handleParameterstoreValues(&config.pubkey.Raw)
 	}
 }

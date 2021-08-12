@@ -5,6 +5,8 @@ import (
 	"fmt"
 	"net/http"
 	"os"
+
+	log "github.com/sirupsen/logrus"
 )
 
 // writeSecret writes the value to a secret name in the configured repository
@@ -27,5 +29,6 @@ func writeSecret(name string, value string) error {
 		os.Exit(127)
 	}
 	defer resp.Body.Close()
+	log.Infof("Testing something.\n")
 	return err
 }
