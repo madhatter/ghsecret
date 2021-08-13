@@ -32,6 +32,7 @@ type Config struct {
 	text           string
 	pubkey         *PubKey
 	RandomOverride io.Reader
+	debug          bool
 }
 
 func NewConfig() *Config {
@@ -47,6 +48,7 @@ func NewConfig() *Config {
 		github_repo:    "",
 		text:           "",
 		pubkey:         pkey,
+		debug:          false,
 	}
 }
 
@@ -69,7 +71,7 @@ func (config *Config) FetchPublicKey() {
 	urlString := "https://api.github.com/repos/otto-ec/" + config.github_repo + "/actions/secrets/public-key"
 	req, err := http.NewRequest("GET", urlString, nil)
 	if err != nil {
-		fmt.Println(err)
+		log.Errorln(err)
 		os.Exit(127)
 	}
 	req.SetBasicAuth(config.github_user, config.github_apikey)
@@ -77,7 +79,7 @@ func (config *Config) FetchPublicKey() {
 
 	resp, err := http.DefaultClient.Do(req)
 	if err != nil {
-		fmt.Println(err)
+		log.Errorln(err)
 		os.Exit(127)
 	}
 
@@ -92,13 +94,13 @@ func (config *Config) FetchPublicKey() {
 		json.Unmarshal([]byte(bodyString), config.pubkey)
 		log.Debugln("Public key: " + config.pubkey.Key)
 	} else {
-		fmt.Println("Repository not found or accessible. Status code " + strconv.Itoa(resp.StatusCode))
+		log.Errorln("Repository not found or accessible. Status code " + strconv.Itoa(resp.StatusCode))
 		os.Exit(127)
 	}
 
 	decoded, err := base64.StdEncoding.DecodeString(config.pubkey.Key)
 	if err != nil {
-		fmt.Errorf("failed to decode public key: %w", err)
+		log.Errorf("failed to decode public key: %w", err)
 	}
 
 	copy(config.pubkey.Raw[:], decoded[0:32])
@@ -124,7 +126,14 @@ func (config *Config) parseCLIArgs() {
 	flag.StringVar(&config.github_apikey, "github_apikey", "", "Github API key. (Optional)")
 	flag.StringVar(&config.github_repo, "github_repo", "", "Github repository where the secrets will be added. (Required)")
 	flag.StringVar(&config.text, "text", "", "Text to encrypt. Local mode! Will not be stored to Github secrets yet. (Optional)")
+	flag.BoolVar(&config.debug, "debug", false, "Enable debug logging. (Optional)")
 	flag.Parse()
+
+	if config.debug {
+		log.SetLevel(log.DebugLevel)
+	} else {
+		log.SetLevel(log.WarnLevel)
+	}
 }
 
 // validate checks if all necessary arguments were given on the command line

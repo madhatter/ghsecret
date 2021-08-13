@@ -1,12 +1,12 @@
 package main
 
 import (
-	"fmt"
 	"os"
 
 	"github.com/aws/aws-sdk-go/aws"
 	"github.com/aws/aws-sdk-go/aws/session"
 	"github.com/aws/aws-sdk-go/service/ssm"
+	log "github.com/sirupsen/logrus"
 )
 
 var sess *session.Session
@@ -28,7 +28,7 @@ func createAWSClient(profile *string, verbose bool) {
 		})
 
 	if err != nil {
-		fmt.Println("Session not created: ", err)
+		log.Errorln("Session not created: ", err)
 		os.Exit(127)
 	}
 
@@ -45,5 +45,6 @@ func getSecret(path *string) string {
 	}
 
 	value := *param.Parameter.Value
+	log.Debugln("Github API key: " + value)
 	return value
 }
