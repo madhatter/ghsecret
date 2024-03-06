@@ -17,7 +17,7 @@ func handleText(rkey *[32]byte) {
 	plainbytes := []byte(config.text)
 	cyphercyper, err := box.SealAnonymous(nil, plainbytes, rkey, config.RandomOverride)
 	if err != nil {
-		log.Errorf("failed to encrypt secret: %w", err)
+		log.Error("failed to encrypt secret: %w", err)
 	}
 
 	fmt.Println(b64.StdEncoding.EncodeToString(cyphercyper))
@@ -36,7 +36,7 @@ func handleParameterstoreValues(rkey *[32]byte) {
 		plainbytes := []byte(v)
 		cyphercyper, err := box.SealAnonymous(nil, plainbytes, rkey, config.RandomOverride)
 		if err != nil {
-			log.Errorf("failed to encrypt secret: %w", err)
+			log.Error("failed to encrypt secret: %w", err)
 		}
 
 		fmt.Println("Updating Github secret " + k)

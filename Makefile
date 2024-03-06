@@ -6,7 +6,8 @@ CGO0_BINS := $(BIN_DIR)/$(BIN_NAME)-alpine-amd64 $(BIN_DIR)/$(BIN_NAME)-darwin-a
 CGO1_BINS := $(BIN_DIR)/$(BIN_NAME)-linux-amd64
 LOCAL_BIN := $(BIN_DIR)/$(BIN_NAME)
 #BINS := $(CGO0_BINS) $(CGO1_BINS) $(LOCAL_BIN)
-BINS := $(CGO1_BINS) $(LOCAL_BIN)
+#BINS := $(CGO1_BINS) $(LOCAL_BIN)
+BINS := $(LOCAL_BIN)
 TARGET ?= $(HOME)/bin
 VERSION=$(shell git describe --tags)
 

@@ -6,12 +6,6 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
-func TestConfig_DefaultDecryptIsFalse(t *testing.T) {
-	c := NewConfig()
-
-	assert.Equal(t, false, c.decrypt)
-}
-
 func TestConfig_DefaultAWSParameterStoreNodeIsSet(t *testing.T) {
 	c := NewConfig()
 

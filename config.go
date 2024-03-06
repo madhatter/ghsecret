@@ -100,7 +100,7 @@ func (config *Config) FetchPublicKey() {
 
 	decoded, err := base64.StdEncoding.DecodeString(config.pubkey.Key)
 	if err != nil {
-		log.Errorf("failed to decode public key: %w", err)
+		log.Error("failed to decode public key: %w", err)
 	}
 
 	copy(config.pubkey.Raw[:], decoded[0:32])
