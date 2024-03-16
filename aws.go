@@ -45,6 +45,6 @@ func getSecret(path *string) string {
 	}
 
 	value := *param.Parameter.Value
-	log.Debugln("Github API key: " + value)
+	log.Debugln("Parameter value: " + value)
 	return value
 }

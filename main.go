@@ -32,6 +32,8 @@ func handleParameterstoreValues(rkey *[32]byte) {
 	json.Unmarshal([]byte(secretString), &m)
 	config.storeAWSCredentials(m["AWS_ACCESS_KEY_ID"], m["AWS_ACCESS_KEY_SECRET"])
 
+	log.Debugln("AWS_KEY_ID: " + config.aws_key_id)
+
 	for k, v := range m {
 		plainbytes := []byte(v)
 		cyphercyper, err := box.SealAnonymous(nil, plainbytes, rkey, config.RandomOverride)
@@ -64,7 +66,7 @@ func main() {
 	}
 
 	// public key fetched from github-repo
-	config.FetchPublicKey()
+	config.fetchPublicKey()
 
 	// convert string from command line
 	if config.text != "" {

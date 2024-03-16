@@ -6,7 +6,6 @@ import (
 	"flag"
 	"fmt"
 	"io"
-	"io/ioutil"
 	"net/http"
 	"os"
 	"strconv"
@@ -67,8 +66,9 @@ func NewPubKey() *PubKey {
 }
 
 // fetchPublicKey gets the public key and key_id for a given Github repository
-func (config *Config) FetchPublicKey() {
-	urlString := "https://api.github.com/repos/otto-ec/" + config.github_repo + "/actions/secrets/public-key"
+func (config *Config) fetchPublicKey() {
+	urlString := "https://api.github.com/repos/otto-ec/" + config.github_repo +
+		"/actions/secrets/public-key"
 	req, err := http.NewRequest("GET", urlString, nil)
 	if err != nil {
 		log.Errorln(err)
@@ -86,15 +86,16 @@ func (config *Config) FetchPublicKey() {
 	defer resp.Body.Close()
 
 	if resp.StatusCode == http.StatusOK {
-		bodyBytes, err := ioutil.ReadAll(resp.Body)
-		if err != nil {
-			log.Fatal(err)
+		bodyBytes, io_err := io.ReadAll(resp.Body)
+		if io_err != nil {
+			log.Fatal(io_err)
 		}
 		bodyString := string(bodyBytes)
 		json.Unmarshal([]byte(bodyString), config.pubkey)
 		log.Debugln("Public key: " + config.pubkey.Key)
 	} else {
-		log.Errorln("Repository not found or accessible. Status code " + strconv.Itoa(resp.StatusCode))
+		log.Errorln("Repository not found or accessible. Status code " +
+			strconv.Itoa(resp.StatusCode))
 		os.Exit(127)
 	}
 
@@ -106,7 +107,8 @@ func (config *Config) FetchPublicKey() {
 	copy(config.pubkey.Raw[:], decoded[0:32])
 }
 
-// fetchGithubAPIKey gets the credentials needed to access Github from the parameter store in AWS
+// fetchGithubAPIKey gets the credentials needed to access Github from the
+// parameter store in AWS
 func (config *Config) fetchGithubAPIKey() {
 	path := API_KEY_PATH
 	config.github_apikey = getSecret(&path)
